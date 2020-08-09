@@ -1,19 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-
-import { ApolloClient, ApolloProvider, gql, InMemoryCache, useQuery } from '@apollo/client'
+import { ApolloClient, ApolloProvider, gql, InMemoryCache } from '@apollo/client'
 
 const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        dogs (_, { args, toReference }) {
-          return [{
-            id: 'id',
-            breed: 'breed',
-            displayImage: 'displayImage',
-          }]
-        },
         dog (_, { args, toReference }) {
           return toReference({
             __typename: 'Dog',
@@ -25,39 +17,46 @@ const cache = new InMemoryCache({
   },
 })
 
-const client = new ApolloClient({
-  cache,
-})
+const client = new ApolloClient({ cache })
+
+const newDog = {
+  id: '6',
+  breed: 'lucky',
+  displayImage: 'miao',
+  __typename: 'Dog',
+}
 
 const GET_ALL_DOGS = gql`
-  query GetAllDogs {
-    dogs {
-      id
-      breed
-      displayImage
+    query GetAllDogs {
+        dogs {
+            id
+            breed
+            displayImage
+        }
     }
-  }
+`
+const GET_DOG = gql`
+    query GetAllDogs {
+        dog(id: 6) {
+            id
+            breed
+            displayImage
+        }
+    }
 `
 
-/*const GET_DOG = gql`
-  query GetAllDogs {
-    dog(id: "id") {
-      id
-      breed
-      displayImage
-    }
-  }
-`*/
+client.writeQuery({
+  query: GET_ALL_DOGS,
+  data: {
+    dogs: [newDog],
+  },
+})
 
-// eslint-disable-next-line react/display-name
 const MyApp = () => {
-  const { loading, error, data } = useQuery(GET_ALL_DOGS)
-  console.log('data:', data)
-  console.log('loading:', loading)
-  if (loading) {return <p>Loading...</p>}
-  if (error) {return <p>Error :(</p>}
-  
-  return data.dogs.map(({ breed, displayImage }) => (
+  const { dogs } = client.readQuery({ query: GET_ALL_DOGS })
+  const { dog } = client.readQuery({ query: GET_DOG })
+  console.log('dog:', dog)
+  return dogs.map(({ breed, displayImage }) => (
     <div key={breed}>
       <p>
         {breed}: {displayImage}

@@ -1,0 +1,10 @@
+directive @client on FIELD_DEFINITION
+type Query {
+    dogs: [Dog]
+    dog(id: ID!): Dog
+}
+type Dog {
+    id: ID!
+    breed: String
+    displayImage: String
+}
