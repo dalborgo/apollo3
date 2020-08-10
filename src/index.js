@@ -50,11 +50,31 @@ const GET_DOG = gql`
     }
   }
 `
+const GET_DOG2 = gql`
+  query GetAllDogs {
+    dog(id: 111) {
+      id
+      breed
+      displayImage
+    }
+  }
+`
 
 client.writeQuery({
   query: GET_ALL_DOGS,
   data: {
     dogs: [newDog, newDog2],
+  },
+})
+client.writeQuery({
+  query: GET_DOG2,
+  data: {
+    dog: {
+      id: 111,
+      breed: 'lucky111',
+      displayImage: 'miao',
+      __typename: 'Dog',
+    },
   },
 })
 
@@ -79,6 +99,11 @@ client.writeFragment({
 const MyApp = () => {
   const { dogs } = client.readQuery({ query: GET_ALL_DOGS })
   const { dog } = client.readQuery({ query: GET_DOG })
+  {
+    const { dog } = client.readQuery({ query: GET_DOG2 })
+    console.log('dog111:', dog)
+  }
+  
   console.log('dog:', dog)
   
   const dog2 = client.readFragment({
