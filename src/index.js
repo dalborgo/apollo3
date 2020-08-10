@@ -2,6 +2,19 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache } from '@apollo/client'
 
+const typeDefs = gql`
+  directive @client on FIELD_DEFINITION
+  extend type Query {
+    dogs: [Dog]
+    dog(id: ID!): Dog
+  }
+  type Dog {
+    id: ID!
+    breed: String
+    displayImage: String
+  }
+`
+
 const cache = new InMemoryCache({
   typePolicies: {
     Query: {
@@ -17,7 +30,7 @@ const cache = new InMemoryCache({
   },
 })
 
-const client = new ApolloClient({ cache })
+const client = new ApolloClient({ cache, typeDefs })
 
 const newDog = {
   id: 6,
@@ -42,17 +55,8 @@ const GET_ALL_DOGS = gql`
   }
 `
 const GET_DOG = gql`
-  query GetAllDogs {
-    dog(id: 7) {
-      id
-      breed
-      displayImage
-    }
-  }
-`
-const GET_DOG2 = gql`
-  query GetAllDogs {
-    dog(id: 111) {
+  query GetAllDogs ($id: ID!) {
+    dog(id: $id) {
       id
       breed
       displayImage
@@ -64,17 +68,6 @@ client.writeQuery({
   query: GET_ALL_DOGS,
   data: {
     dogs: [newDog, newDog2],
-  },
-})
-client.writeQuery({
-  query: GET_DOG2,
-  data: {
-    dog: {
-      id: 111,
-      breed: 'lucky111',
-      displayImage: 'miao',
-      __typename: 'Dog',
-    },
   },
 })
 
@@ -98,13 +91,8 @@ client.writeFragment({
 
 const MyApp = () => {
   const { dogs } = client.readQuery({ query: GET_ALL_DOGS })
-  const { dog } = client.readQuery({ query: GET_DOG })
-  {
-    const { dog } = client.readQuery({ query: GET_DOG2 })
-    console.log('dog111:', dog)
-  }
-  
-  console.log('dog:', dog)
+  const { dog } = client.readQuery({ query: GET_DOG, variables: { id: 7 } })
+  //console.log('dog:', dog)
   
   const dog2 = client.readFragment({
     id: 9,
