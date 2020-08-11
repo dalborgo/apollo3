@@ -4,8 +4,14 @@ schema {
     query: Query
 }
 
+type Product {
+    name: String
+    price: Int
+}
+
 type Query {
     hello: String
+    product(id: ID!): Product
 }
 
 enum CacheControlScope {

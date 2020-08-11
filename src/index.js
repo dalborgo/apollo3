@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { ApolloClient, ApolloProvider, gql, InMemoryCache } from '@apollo/client'
+import { ApolloClient, ApolloProvider, gql, InMemoryCache, useQuery } from '@apollo/client'
 
 const typeDefs = gql`
   directive @client on FIELD_DEFINITION
@@ -13,7 +13,11 @@ const typeDefs = gql`
     breed: String
     displayImage: String
   }
+  extend type Product {
+    isInCart: Boolean
+  }
 `
+
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -25,12 +29,17 @@ const cache = new InMemoryCache({
             id: args.id,
           })
         },
+        isInCart: { // Field policy for the isInCart field
+          read () { // The read function for the isInCart field
+            return true
+          },
+        },
       },
     },
   },
 })
 
-const client = new ApolloClient({ cache, typeDefs })
+const client = new ApolloClient({ cache, typeDefs, uri: 'http://localhost:4000/graphql' })
 
 const newDog = {
   id: 6,
@@ -38,6 +47,7 @@ const newDog = {
   displayImage: 'miao',
   __typename: 'Dog',
 }
+
 const newDog2 = {
   id: 7,
   breed: 'lucky2',
@@ -60,6 +70,15 @@ const GET_DOG = gql`
       id
       breed
       displayImage
+    }
+  }
+`
+const GET_PRODUCT_DETAILS = gql`
+  query ProductDetails($id: ID!) {
+    product(id: $id) {
+      name
+      price
+      isInCart @client
     }
   }
 `
@@ -92,8 +111,9 @@ client.writeFragment({
 const MyApp = () => {
   const { dogs } = client.readQuery({ query: GET_ALL_DOGS })
   const { dog } = client.readQuery({ query: GET_DOG, variables: { id: 7 } })
+  const { data } = useQuery(GET_PRODUCT_DETAILS, { variables: { id: 12 } })
   //console.log('dog:', dog)
-  
+  console.log('data:', data)
   const dog2 = client.readFragment({
     id: 9,
     fragment: MY_FRAG,
