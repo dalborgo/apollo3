@@ -153,7 +153,7 @@ const AddToCartButton2Why = memo(({ dispatch }) => {
       <button
         onClick={() => dispatch({ type: 'setVal', payload: String(new Date()) })}
       >
-        Add to Cart 2
+        Button to Cart 2
       </button>
     </div>
   )
