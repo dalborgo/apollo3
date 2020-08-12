@@ -3,13 +3,14 @@ import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
 import './wdyr'
 
-const cartItemsVar = makeVar([])
+const cartItemsVar = makeVar(false)
 const typeDefs = gql`
   directive @client on FIELD_DEFINITION
   extend type Query {
     dogs: [Dog]
     dog(id: ID!): Dog
-    cartItems: [String]
+    cartItems: Boolean
+    isLoggedIn: Boolean
   }
   type Dog {
     id: ID!
@@ -44,11 +45,6 @@ const cache = new InMemoryCache({
           read () {
             return cartItemsVar()
           },
-        },
-      },
-      cartItems: {
-        read () {
-          return cartItemsVar()
         },
       },
     },
@@ -130,30 +126,33 @@ client.writeFragment({
   },
 })
 
+const MyContext = React.createContext()
+
 // eslint-disable-next-line react/display-name
-const AddToCartButtonWhy = () => {
-  const cartItems = cartItemsVar()
+const AddToCartButtonWhy = memo(({ cartItems }) => {
+  
   console.log('%cRENDER_BUTTON', 'color: orange')
   return (
     <div>
       <button
-        onClick={() => cartItemsVar([...cartItems, String(new Date())])}
+        onClick={() => cartItemsVar(!cartItems)}
       >
-        Add to Cart
+        {cartItems ? 'Spegni uno' : 'Accendi uno'}
       </button>
     </div>
   )
-}
+})
 AddToCartButtonWhy.whyDidYouRender = true
 // eslint-disable-next-line react/display-name
-const AddToCartButton2Why = memo(({ dispatch }) => {
+const AddToCartButton2Why = memo(({ state }) => {
+  const dispatch = React.useContext(MyContext)
   console.log('%cRENDER_BUTTON2', 'color: pink')
   return (
     <div>
       <button
-        onClick={() => dispatch({ type: 'setVal', payload: String(new Date()) })}
+        onClick={() => dispatch({ type: 'setVal', payload: !state })}
       >
-        Button to Cart 2
+        {state ? 'Spegni due' : 'Accendi due'}
       </button>
     </div>
   )
@@ -161,49 +160,72 @@ const AddToCartButton2Why = memo(({ dispatch }) => {
 
 AddToCartButton2Why.whyDidYouRender = true
 
+// eslint-disable-next-line react/display-name
+const AddToCartButton3Why = memo(() => {
+  const { isLoggedIn } = client.readQuery({ query: IS_LOGGED_IN })
+  return (
+    <div>
+      <button
+        onClick={
+          () => cache.modify({
+            fields: {
+              isLoggedIn (cachedIsLoggedIn) {
+                return !cachedIsLoggedIn
+              },
+            },
+          })
+        }
+      >
+        {isLoggedIn ? 'Spegni tre' : 'Accendi tre'}
+      </button>
+    </div>
+  )
+})
+
+AddToCartButton3Why.whyDidYouRender = true
+
 function reducer (state, action) {
   switch (action.type) {
     case 'setVal':
-      return [...state, action.payload]
+      return action.payload
     default:
       return state
   }
 }
 
-function Cart () {
-  const [render, setRender] = useState('')
-  const { data, loading, error } = useQuery(GET_CART_ITEMS)
-  const [state, dispatch] = useReducer(reducer, [])
-  console.log('state:', state)
-  console.log('render:', render)
-  if (loading) {
-    return <span>Loading...</span>
-  }
-  if (error) {
-    return <p>ERROR: {error.message}</p>
-  }
+const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
+  console.log('%cRENDER_CART', 'color: cyan')
+  const cartItems = cartItemsVar()
   return (
     <div className="cart">
       <div>My Cart</div>
-      <AddToCartButtonWhy/>
-      <AddToCartButton2Why dispatch={dispatch}/>
-      <button onClick={() => setRender(new Date())}>Render</button>
+      <AddToCartButtonWhy cartItems={cartItems}/>
+      <AddToCartButton2Why state={state}/>
+      <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
       {
-        data && data.cartItems.length === 0 ? (
-          <p>No items in your cart</p>
+        cRes === false ? (
+          <p>SPENTO UNO</p>
         ) : (
-          <>
-            {
-              data && data.cartItems.map(productId => (
-                <div key={productId}>{productId}</div>
-              ))
-            }
-          </>
+          <p>ACCESO UNO</p>
+        )
+      }
+      {
+        state === false ? (
+          <p>SPENTO DUE</p>
+        ) : (
+          <p>ACCESO DUE</p>
+        )
+      }
+      {
+        isLoggedIn === false ? (
+          <p>SPENTO TRE</p>
+        ) : (
+          <p>ACCESO TRE</p>
         )
       }
     </div>
   )
-}
+})
 
 // eslint-disable-next-line no-unused-vars
 const MyApp = () => {
@@ -227,10 +249,81 @@ const MyApp = () => {
   ))
 }
 
+// eslint-disable-next-line react/display-name
+const HeaderWhy = memo(({ cartItems }) => {
+  console.log('%cRENDER_HEADER1', 'color: yellow')
+  return (
+    <div style={{ width: '100%', backgroundColor: cartItems ? 'red' : 'yellow' }}>
+      HEADER UNO
+    </div>
+  )
+})
+HeaderWhy.whyDidYouRender = true
+
+// eslint-disable-next-line react/display-name
+const Header2Why = memo(({ state }) => {
+  console.log('%cRENDER_HEADER2', 'color: yellow')
+  return (
+    <div style={{ width: '100%', backgroundColor: state ? 'red' : 'yellow' }}>
+      HEADER DUE
+    </div>
+  )
+})
+
+Header2Why.whyDidYouRender = true
+// eslint-disable-next-line react/display-name
+const Header3Why = memo(({ isLoggedIn }) => {
+  console.log('%cRENDER_HEADER3', 'color: yellow')
+  return (
+    <div style={{ width: '100%', backgroundColor: isLoggedIn ? 'red' : 'yellow' }}>
+      HEADER TRE
+    </div>
+  )
+})
+
+Header3Why.whyDidYouRender = true
+
+const IS_LOGGED_IN = gql`
+  query IsUserLoggedIn {
+    isLoggedIn @client
+  }
+`
+
+cache.writeQuery({
+  query: IS_LOGGED_IN,
+  data: {
+    isLoggedIn: false,
+  },
+})
+
+const Main = () => {
+  
+  const { data } = useQuery(GET_CART_ITEMS)
+  const { data: data2 } = useQuery(IS_LOGGED_IN)
+  const [render, setRender] = useState('')
+  console.log('render:', render)
+  const [state, dispatch] = useReducer(reducer, false)
+  return (
+    <MyContext.Provider value={dispatch}>
+      <button onClick={() => setRender(new Date())}>Render</button>
+      <HeaderWhy cartItems={data.cartItems}/>
+      <Header2Why state={state}/>
+      <Header3Why isLoggedIn={data2.isLoggedIn}/>
+      <br/>
+      <div>
+        {
+          data && data2 &&
+          <Cart cartItems={data.cartItems} isLoggedIn={data2.isLoggedIn} state={state}/>
+        }
+      </div>
+    </MyContext.Provider>
+  )
+}
+
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Cart/>
+      <Main/>
     </ApolloProvider>
   )
 }
