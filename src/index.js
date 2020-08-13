@@ -1,6 +1,8 @@
 import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
+import create from 'zustand'
+import produce from 'immer'
 import './wdyr'
 
 const cartItemsVar = makeVar(false)
@@ -44,6 +46,11 @@ const cache = new InMemoryCache({
         cartItems: {
           read () {
             return cartItemsVar()
+          },
+        },
+        isLoggedIn: {
+          read (val) {
+            return val === undefined ? false : val
           },
         },
       },
@@ -161,17 +168,25 @@ const AddToCartButton2Why = memo(({ state }) => {
 AddToCartButton2Why.whyDidYouRender = true
 
 // eslint-disable-next-line react/display-name
-const AddToCartButton3Why = memo(() => {
-  const { isLoggedIn } = client.readQuery({ query: IS_LOGGED_IN })
+const AddToCartButton3Why = memo(({ isLoggedIn }) => {
+  console.log('%cRENDER_BUTTON3', 'color: brown')
+  /*
+  cache.modify({
+  fields: {
+    isLoggedIn (cachedIsLoggedIn) {
+      return !cachedIsLoggedIn
+    },
+  },
+})
+  */
   return (
     <div>
       <button
         onClick={
-          () => cache.modify({
-            fields: {
-              isLoggedIn (cachedIsLoggedIn) {
-                return !cachedIsLoggedIn
-              },
+          () => cache.writeQuery({ //usando il modify non funzionava l'inizializzazione perché ha già la funzione di modifica
+            query: IS_LOGGED_IN,
+            data: {
+              isLoggedIn: !isLoggedIn,
             },
           })
         }
@@ -183,6 +198,24 @@ const AddToCartButton3Why = memo(() => {
 })
 
 AddToCartButton3Why.whyDidYouRender = true
+// eslint-disable-next-line react/display-name
+const AddToCartButton4Why = memo(() => {
+  console.log('%cRENDER_BUTTON4', 'color: gray')
+  const loading = useStore(state => state.loading)
+  const chLog = useStore(state => state.chLog)
+  //set(state => {state.loading = !state.loading})
+  return (
+    <div>
+      <button
+        onClick={chLog}
+      >
+        {loading ? 'Spegni qu' : 'Accendi qu'}
+      </button>
+    </div>
+  )
+})
+
+AddToCartButton4Why.whyDidYouRender = true
 
 function reducer (state, action) {
   switch (action.type) {
@@ -193,15 +226,18 @@ function reducer (state, action) {
   }
 }
 
+// eslint-disable-next-line react/display-name
 const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
   console.log('%cRENDER_CART', 'color: cyan')
   const cartItems = cartItemsVar()
+  const loading = useStore(state => state.loading)
   return (
     <div className="cart">
       <div>My Cart</div>
       <AddToCartButtonWhy cartItems={cartItems}/>
       <AddToCartButton2Why state={state}/>
       <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
+      <AddToCartButton4Why/>
       {
         cRes === false ? (
           <p>SPENTO UNO</p>
@@ -221,6 +257,13 @@ const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
           <p>SPENTO TRE</p>
         ) : (
           <p>ACCESO TRE</p>
+        )
+      }
+      {
+        loading === false ? (
+          <p>SPENTO qu</p>
+        ) : (
+          <p>ACCESO qu</p>
         )
       }
     </div>
@@ -282,34 +325,53 @@ const Header3Why = memo(({ isLoggedIn }) => {
 })
 
 Header3Why.whyDidYouRender = true
+// eslint-disable-next-line react/display-name
+const Header4Why = memo(({ loading }) => {
+  console.log('%cRENDER_HEADER4', 'color: red')
+  return (
+    <div style={{ width: '100%', backgroundColor: loading ? 'red' : 'yellow' }}>
+      HEADER QU
+    </div>
+  )
+})
+
+Header4Why.whyDidYouRender = true
 
 const IS_LOGGED_IN = gql`
   query IsUserLoggedIn {
     isLoggedIn @client
   }
 `
+const immer = config => (set, get) => config(fn => set(produce(fn)), get)
 
-cache.writeQuery({
-  query: IS_LOGGED_IN,
-  data: {
-    isLoggedIn: false,
+const [useStore] = create(immer(set => ({
+  loading: false,
+  filters: {
+    mio: 1,
+    tuo: 2,
   },
-})
-
+  chLog: () => set(state => void (state.loading = !state.loading)), //return denote an override
+  set: fn => set(fn),
+})))
 const Main = () => {
-  
   const { data } = useQuery(GET_CART_ITEMS)
   const { data: data2 } = useQuery(IS_LOGGED_IN)
   const [render, setRender] = useState('')
   console.log('render:', render)
   const [state, dispatch] = useReducer(reducer, false)
+  const loading = useStore(state => state.loading)
+  const set = useStore(state => state.set)
+  const filters = useStore(state => state.filters)
+  console.log('filters:', filters)
   return (
     <MyContext.Provider value={dispatch}>
       <button onClick={() => setRender(new Date())}>Render</button>
       <HeaderWhy cartItems={data.cartItems}/>
       <Header2Why state={state}/>
       <Header3Why isLoggedIn={data2.isLoggedIn}/>
+      <Header4Why loading={loading}/>
       <br/>
+      <button onClick={() => set(state => {state.filters.mio = 122})}>mio</button>
       <div>
         {
           data && data2 &&
