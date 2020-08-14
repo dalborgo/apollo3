@@ -36,12 +36,7 @@
       }
     ],
     "curly": 2,
-    "no-unused-vars": [
-      "warn",
-      {
-        "varsIgnorePattern": "^_+$"
-      }
-    ],
+    "no-unused-vars": "warn",
     "camelcase": [
       1,
       {

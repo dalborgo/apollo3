@@ -113,7 +113,7 @@ const Zustand = () => {
   const { myFetch, json } = useStoreFetch(state => ({ myFetch: state.myFetch, json: state.json }))
   const second = useStore(state => state.obj.second)
   const set = useStore(state => state.set)
-  const [_, setRender] = useState()
+  const [, setRender] = useState()
   console.log('render')
   console.log('second:', second)
   console.log('json:', json)
