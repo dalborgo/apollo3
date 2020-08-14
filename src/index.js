@@ -1,6 +1,7 @@
 import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
+import Zustand from './zustand'
 import './wdyr'
 
 const cartItemsVar = makeVar(false)
@@ -203,25 +204,31 @@ const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
       <AddToCartButton2Why state={state}/>
       <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
       {
-        cRes === false ? (
-          <p>SPENTO UNO</p>
-        ) : (
-          <p>ACCESO UNO</p>
-        )
+        cRes === false ?
+          (
+            <p>SPENTO UNO</p>
+          )
+          : (
+            <p>ACCESO UNO</p>
+          )
       }
       {
-        state === false ? (
-          <p>SPENTO DUE</p>
-        ) : (
-          <p>ACCESO DUE</p>
-        )
+        state === false ?
+          (
+            <p>SPENTO DUE</p>
+          ) :
+          (
+            <p>ACCESO DUE</p>
+          )
       }
       {
-        isLoggedIn === false ? (
-          <p>SPENTO TRE</p>
-        ) : (
-          <p>ACCESO TRE</p>
-        )
+        isLoggedIn === false ?
+          (
+            <p>SPENTO TRE</p>
+          ) :
+          (
+            <p>ACCESO TRE</p>
+          )
       }
     </div>
   )
@@ -296,8 +303,8 @@ cache.writeQuery({
   },
 })
 
+// eslint-disable-next-line no-unused-vars
 const Main = () => {
-  
   const { data } = useQuery(GET_CART_ITEMS)
   const { data: data2 } = useQuery(IS_LOGGED_IN)
   const [render, setRender] = useState('')
@@ -323,7 +330,7 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Main/>
+      <Zustand/>
     </ApolloProvider>
   )
 }
