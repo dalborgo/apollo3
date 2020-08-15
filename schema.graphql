@@ -12,6 +12,7 @@ type Product {
 type Query {
     hello: String
     product(id: ID!): Product
+    products: [Product]
 }
 
 enum CacheControlScope {

@@ -2,6 +2,7 @@ import React, { memo, useEffect, useState } from 'react'
 import create from 'zustand'
 import produce from 'immer'
 import shallow from 'zustand/shallow'
+import axios from 'axios'
 
 const wait = delay => new Promise(resolve => setTimeout(resolve, delay))
 const immer = config => (set, get) => config(fn => set(produce(fn)), get)
@@ -10,6 +11,7 @@ const [useStore] = create(immer(set => ({
     loading: false,
     second: 'ds',
     count: 0,
+    details: '',
   },
   inc: async () => {
     await wait(1000)
@@ -108,8 +110,10 @@ function Component ({ id }) {
 
 const Zustand = () => {
   const change2 = useStore(state => state.change2)
+  const change = useStore(state => state.change)
   const inc = useStore(state => state.inc)
   const count = useStore(state => state.obj.count)
+  const details = useStore(state => state.obj.details)
   const { myFetch, json } = useStoreFetch(state => ({ myFetch: state.myFetch, json: state.json }))
   const second = useStore(state => state.obj.second)
   const set = useStore(state => state.set)
@@ -118,6 +122,22 @@ const Zustand = () => {
   console.log('second:', second)
   console.log('json:', json)
   console.log('count:', count)
+  useEffect(() => {
+    console.log('qua')
+    
+    function getFetchUrl () {
+      return 'https://api.spacexdata.com/v4/launches/latest'
+    }
+    
+    async function fetchData () {
+      change()
+      const result = await axios(getFetchUrl())
+      set(state => void (state.obj.details = result.data.details))
+      change()
+    }
+    
+    fetchData().then()
+  }, [change, set])
   return (
     <>
       <Component id={'uno'}/>
@@ -139,6 +159,7 @@ const Zustand = () => {
       <button onClick={() => set(state => void (state.obj.second = new Date()))}>Cambia set</button>
       <Header4Why/>
       <br/>
+      <div>{details}</div>
       <div>
         {
           <Cart2/>

@@ -1,12 +1,13 @@
 import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
-import Zustand from './zustand'
 import './wdyr'
+import Component from './query'
 
 const cartItemsVar = makeVar(false)
 const typeDefs = gql`
-  directive @client on FIELD_DEFINITION
+  #basta anche solo field, FIELD_DEFINITION per schema e FIELD per query
+  directive @client on FIELD_DEFINITION | FIELD
   extend type Query {
     dogs: [Dog]
     dog(id: ID!): Dog
@@ -18,7 +19,7 @@ const typeDefs = gql`
     breed: String
     displayImage: String
   }
-  type Product {
+  extend type Product {
     isInCart: Int
   }
 `
@@ -330,7 +331,7 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Zustand/>
+      <Component/>
     </ApolloProvider>
   )
 }
