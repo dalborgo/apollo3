@@ -2,7 +2,7 @@ import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
 import './wdyr'
-import Component from './query'
+import ProductsPage from './query'
 
 const cartItemsVar = makeVar(false)
 const typeDefs = gql`
@@ -30,7 +30,7 @@ const cache = new InMemoryCache({
       fields: { // Field policy map for the Product type
         isInCart: { // Field policy for the isInCart field
           read (_, { variables }) { // The read function for the isInCart field
-            return variables.id * 2
+            return variables.id * 2 || 100
           },
         },
       },
@@ -331,7 +331,7 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Component/>
+      <ProductsPage/>
     </ApolloProvider>
   )
 }
