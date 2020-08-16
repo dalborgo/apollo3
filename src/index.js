@@ -7,7 +7,7 @@ import Norm from './norm'
 const cartItemsVar = makeVar(false)
 const typeDefs = gql`
   #basta anche solo field, FIELD_DEFINITION per schema e FIELD per query
-  directive @client on FIELD_DEFINITION | FIELD
+  directive @client on FIELD
   extend type Query {
     dogs: [Dog]
     dog(id: ID!): Dog
