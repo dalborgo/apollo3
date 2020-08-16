@@ -2,7 +2,7 @@ import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
 import './wdyr'
-import ProductsPage from './query'
+import Norm from './norm'
 
 const cartItemsVar = makeVar(false)
 const typeDefs = gql`
@@ -26,6 +26,11 @@ const typeDefs = gql`
 
 const cache = new InMemoryCache({
   typePolicies: {
+    Book: {
+      // If one of the keyFields is an object with fields of its own, you can
+      // include those nested keyFields by using a nested array of strings:
+      keyFields: ['isbn'],
+    },
     Product: {
       fields: { // Field policy map for the Product type
         isInCart: { // Field policy for the isInCart field
@@ -331,7 +336,7 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <ProductsPage/>
+      <Norm/>
     </ApolloProvider>
   )
 }
