@@ -31,19 +31,16 @@ const cache = new InMemoryCache({
       // include those nested keyFields by using a nested array of strings:
       keyFields: ['isbn'],
       fields: {
-        /* author: {
-          merge(existing, incoming) {
-            // Equivalent to what happens if there is no custom merge function.
-            return incoming;
+        title (title) {
+          return title + ' @title'
+        },
+        numeri: {
+          merge (existing = [], incoming = []) {
+            return [...existing, ...incoming]
           },
-        },*/
-        title: {
-          read (title = 'UNKNOWN NAME') {
-            return title + ' @title'
-          },
-          merge (existing, incoming) {
-            return incoming ? incoming + ' ' + (new Date()).toString() : existing
-          },
+        },
+        author: {
+          merge: true,
         },
       },
     },

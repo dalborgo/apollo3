@@ -6,6 +6,7 @@ const BOOK_WITH_AUTHOR_NAME = gql`
     favoriteBook {
       isbn
       title
+      numeri
       author {
         name
       }
@@ -17,6 +18,7 @@ const BOOK_WITH_AUTHOR_LANGUAGE = gql`
     favoriteBook {
       isbn
       title
+      numeri
       author {
         language
       }
@@ -28,8 +30,10 @@ const CHANGE_BOOK = gql`
     changeBook(input:$input) {
       isbn
       title
+      numeri
       author {
         name
+        language
       }
     }
   }
@@ -39,7 +43,7 @@ const Norm = () => {
   const { data: data2 } = useQuery(BOOK_WITH_AUTHOR_LANGUAGE)
   const [changeBook] = useMutation(CHANGE_BOOK, {
     variables: {
-      input: { title: String(Math.random()) },
+      input: { title: String(Math.random()), numeri: [77, 122], author: { language: 'it', name: 'nuovo' } },
     },
   })
   if (data) {
