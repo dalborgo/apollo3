@@ -30,6 +30,22 @@ const cache = new InMemoryCache({
       // If one of the keyFields is an object with fields of its own, you can
       // include those nested keyFields by using a nested array of strings:
       keyFields: ['isbn'],
+      fields: {
+        /* author: {
+          merge(existing, incoming) {
+            // Equivalent to what happens if there is no custom merge function.
+            return incoming;
+          },
+        },*/
+        title: {
+          read (title = 'UNKNOWN NAME') {
+            return title + ' @title'
+          },
+          merge (existing, incoming) {
+            return incoming ? incoming + ' ' + (new Date()).toString() : existing
+          },
+        },
+      },
     },
     Product: {
       fields: { // Field policy map for the Product type
