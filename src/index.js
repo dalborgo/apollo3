@@ -333,7 +333,7 @@ const Header2Why = memo(({ state }) => {
 Header2Why.whyDidYouRender = true
 // eslint-disable-next-line react/display-name
 const Header3Why = memo(({ isLoggedIn }) => {
-  console.log('%cRENDER_HEADER3', 'color: yellow')
+  console.log('%cRENDER_HEADER3', 'color: purple')
   return (
     <div style={{ width: '100%', backgroundColor: isLoggedIn ? 'red' : 'yellow' }}>
       HEADER TRE
