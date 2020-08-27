@@ -2,7 +2,6 @@ import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
 import './wdyr'
-import Norm from './norm'
 
 const cartItemsVar = makeVar(false)
 const typeDefs = gql`
@@ -182,6 +181,7 @@ AddToCartButton2Why.whyDidYouRender = true
 
 // eslint-disable-next-line react/display-name
 const AddToCartButton3Why = memo(() => {
+  console.log('%cRENDER_BUTTON3', 'color: pink')
   const { isLoggedIn } = client.readQuery({ query: IS_LOGGED_IN })
   return (
     <div>
@@ -204,6 +204,30 @@ const AddToCartButton3Why = memo(() => {
 
 AddToCartButton3Why.whyDidYouRender = true
 
+const AddToCartButton4Why = memo(() => {
+  console.log('%cRENDER_BUTTON4', 'color: pink')
+  const { isLoggedIn } = client.readQuery({ query: IS_LOGGED_IN })
+  return (
+    <div>
+      <button
+        onClick={
+          () => cache.modify({
+            fields: {
+              isLoggedIn (cachedIsLoggedIn) {
+                return !cachedIsLoggedIn
+              },
+            },
+          })
+        }
+      >
+        {isLoggedIn ? 'Spegni qu' : 'Accendi qu'}
+      </button>
+    </div>
+  )
+})
+
+AddToCartButton4Why.whyDidYouRender = true
+
 function reducer (state, action) {
   switch (action.type) {
     case 'setVal':
@@ -222,6 +246,7 @@ const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
       <AddToCartButtonWhy cartItems={cartItems}/>
       <AddToCartButton2Why state={state}/>
       <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
+      <AddToCartButton4Why isLoggedIn={isLoggedIn}/>
       {
         cRes === false ?
           (
@@ -247,6 +272,15 @@ const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
           ) :
           (
             <p>ACCESO TRE</p>
+          )
+      }
+      {
+        isLoggedIn === false ?
+          (
+            <p>SPENTO qu</p>
+          ) :
+          (
+            <p>ACCESO qu</p>
           )
       }
     </div>
@@ -308,6 +342,16 @@ const Header3Why = memo(({ isLoggedIn }) => {
 })
 
 Header3Why.whyDidYouRender = true
+const Header4Why = memo(({ isLoggedIn }) => {
+  console.log('%cRENDER_HEADER4', 'color: yellow')
+  return (
+    <div style={{ width: '100%', backgroundColor: isLoggedIn ? 'red' : 'yellow' }}>
+      HEADER qu
+    </div>
+  )
+})
+
+Header4Why.whyDidYouRender = true
 
 const IS_LOGGED_IN = gql`
   query IsUserLoggedIn {
@@ -335,6 +379,7 @@ const Main = () => {
       <HeaderWhy cartItems={data.cartItems}/>
       <Header2Why state={state}/>
       <Header3Why isLoggedIn={data2.isLoggedIn}/>
+      <Header4Why isLoggedIn={data2.isLoggedIn}/>
       <br/>
       <div>
         {
@@ -349,7 +394,7 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Norm/>
+      <Main/>
     </ApolloProvider>
   )
 }
