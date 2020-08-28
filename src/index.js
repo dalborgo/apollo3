@@ -325,6 +325,7 @@ const Header3Why = memo(({ isLoggedIn }) => {
 })
 
 Header3Why.whyDidYouRender = true
+
 const Header4Why = memo(({ state }) => {
   console.log('%cRENDER_HEADER4', 'color: yellow')
   return (
@@ -333,7 +334,7 @@ const Header4Why = memo(({ state }) => {
     </div>
   )
 })
-
+Header4Why.displayName = 'Header4Why'
 Header4Why.whyDidYouRender = true
 
 const IS_LOGGED_IN = gql`
