@@ -1,5 +1,6 @@
 import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
+import { useImmerReducer } from 'use-immer'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
 import './wdyr'
 
@@ -204,23 +205,14 @@ const AddToCartButton3Why = memo(() => {
 
 AddToCartButton3Why.whyDidYouRender = true
 
-const AddToCartButton4Why = memo(() => {
+const AddToCartButton4Why = memo(({ state, dispatch }) => {
   console.log('%cRENDER_BUTTON4', 'color: pink')
-  const { isLoggedIn } = client.readQuery({ query: IS_LOGGED_IN })
   return (
     <div>
       <button
-        onClick={
-          () => cache.modify({
-            fields: {
-              isLoggedIn (cachedIsLoggedIn) {
-                return !cachedIsLoggedIn
-              },
-            },
-          })
-        }
+        onClick={() => dispatch({ type: 'setVal', payload: !state })}
       >
-        {isLoggedIn ? 'Spegni qu' : 'Accendi qu'}
+        {state ? 'Spegni quattro' : 'Accendi quattro'}
       </button>
     </div>
   )
@@ -228,16 +220,7 @@ const AddToCartButton4Why = memo(() => {
 
 AddToCartButton4Why.whyDidYouRender = true
 
-function reducer (state, action) {
-  switch (action.type) {
-    case 'setVal':
-      return action.payload
-    default:
-      return state
-  }
-}
-
-const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
+const Cart = memo(({ state, stateImmer, cartItems: cRes, isLoggedIn, dispatch }) => {
   console.log('%cRENDER_CART', 'color: cyan')
   const cartItems = cartItemsVar()
   return (
@@ -246,7 +229,7 @@ const Cart = memo(({ state, cartItems: cRes, isLoggedIn }) => {
       <AddToCartButtonWhy cartItems={cartItems}/>
       <AddToCartButton2Why state={state}/>
       <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
-      <AddToCartButton4Why isLoggedIn={isLoggedIn}/>
+      <AddToCartButton4Why dispatch={dispatch} state={stateImmer}/>
       {
         cRes === false ?
           (
@@ -333,7 +316,7 @@ const Header2Why = memo(({ state }) => {
 Header2Why.whyDidYouRender = true
 // eslint-disable-next-line react/display-name
 const Header3Why = memo(({ isLoggedIn }) => {
-  console.log('%cRENDER_HEADER3', 'color: purple')
+  console.log('%cRENDER_HEADER3', 'color: pink')
   return (
     <div style={{ width: '100%', backgroundColor: isLoggedIn ? 'red' : 'yellow' }}>
       HEADER TRE
@@ -342,10 +325,10 @@ const Header3Why = memo(({ isLoggedIn }) => {
 })
 
 Header3Why.whyDidYouRender = true
-const Header4Why = memo(({ isLoggedIn }) => {
+const Header4Why = memo(({ state }) => {
   console.log('%cRENDER_HEADER4', 'color: yellow')
   return (
-    <div style={{ width: '100%', backgroundColor: isLoggedIn ? 'red' : 'yellow' }}>
+    <div style={{ width: '100%', backgroundColor: state ? 'red' : 'yellow' }}>
       HEADER qu
     </div>
   )
@@ -366,6 +349,24 @@ cache.writeQuery({
   },
 })
 
+function reducer (state, action) {
+  switch (action.type) {
+    case 'setVal':
+      return true
+    default:
+      return state
+  }
+}
+
+function immerReducer (draft, action) {
+  switch (action.type) {
+    case 'setVal':
+      return action.payload
+    default:
+      throw new Error('Invalid action type!')
+  }
+}
+
 // eslint-disable-next-line no-unused-vars
 const Main = () => {
   const { data } = useQuery(GET_CART_ITEMS)
@@ -373,18 +374,20 @@ const Main = () => {
   const [render, setRender] = useState('')
   console.log('render:', render)
   const [state, dispatch] = useReducer(reducer, false)
+  const [stateImmer, dispatchImmer] = useImmerReducer(immerReducer, false)
   return (
     <MyContext.Provider value={dispatch}>
       <button onClick={() => setRender(new Date())}>Render</button>
       <HeaderWhy cartItems={data.cartItems}/>
       <Header2Why state={state}/>
       <Header3Why isLoggedIn={data2.isLoggedIn}/>
-      <Header4Why isLoggedIn={data2.isLoggedIn}/>
+      <Header4Why state={stateImmer}/>
       <br/>
       <div>
         {
           data && data2 &&
-          <Cart cartItems={data.cartItems} isLoggedIn={data2.isLoggedIn} state={state}/>
+          <Cart cartItems={data.cartItems} dispatch={dispatchImmer} isLoggedIn={data2.isLoggedIn} state={state}
+                stateImmer={stateImmer}/>
         }
       </div>
     </MyContext.Provider>
