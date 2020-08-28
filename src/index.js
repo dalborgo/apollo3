@@ -386,8 +386,13 @@ const Main = () => {
       <div>
         {
           data && data2 &&
-          <Cart cartItems={data.cartItems} dispatch={dispatchImmer} isLoggedIn={data2.isLoggedIn} state={state}
-                stateImmer={stateImmer}/>
+          <Cart
+            cartItems={data.cartItems}
+            dispatch={dispatchImmer}
+            isLoggedIn={data2.isLoggedIn}
+            state={state}
+            stateImmer={stateImmer}
+          />
         }
       </div>
     </MyContext.Provider>
