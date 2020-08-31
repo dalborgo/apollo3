@@ -14,7 +14,8 @@
     "react-app-rewire-inline-import-graphql-ast": "^2.0.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "zustand": "^2.2.4"
+    "zustand": "^2.2.4",
+    "recoil": "^0.0.10"
   },
   "scripts": {
     "start": "rimraf ./node_modules/.cache/babel-loader&&react-app-rewired start",

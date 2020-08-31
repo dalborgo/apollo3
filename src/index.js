@@ -2,6 +2,7 @@ import React, { memo, useReducer, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { useImmerReducer } from 'use-immer'
 import { ApolloClient, ApolloProvider, gql, InMemoryCache, makeVar, useQuery } from '@apollo/client'
+import { atom, RecoilRoot, useRecoilState, useRecoilValue } from 'recoil'
 import './wdyr'
 
 const cartItemsVar = makeVar(false)
@@ -220,7 +221,23 @@ const AddToCartButton4Why = memo(({ state, dispatch }) => {
 
 AddToCartButton4Why.whyDidYouRender = true
 
-const Cart = memo(({ state, stateImmer, cartItems: cRes, isLoggedIn, dispatch }) => {
+const AddToCartButton5Why = memo(({ state, setStateRecoil }) => {
+  console.log('%cRENDER_BUTTON5', 'color: pink')
+  return (
+    <div>
+      <button
+        onClick={() => setStateRecoil(!state)}
+      >
+        {state ? 'Spegni 5' : 'Accendi 5'}
+      </button>
+    </div>
+  )
+})
+
+AddToCartButton5Why.displayName = 'CINQUE'
+AddToCartButton5Why.whyDidYouRender = true
+
+const Cart = memo(({ state, stateImmer, cartItems: cRes, isLoggedIn, dispatch, stateRecoil, setStateRecoil }) => {
   console.log('%cRENDER_CART', 'color: cyan')
   const cartItems = cartItemsVar()
   return (
@@ -230,6 +247,7 @@ const Cart = memo(({ state, stateImmer, cartItems: cRes, isLoggedIn, dispatch })
       <AddToCartButton2Why state={state}/>
       <AddToCartButton3Why isLoggedIn={isLoggedIn}/>
       <AddToCartButton4Why dispatch={dispatch} state={stateImmer}/>
+      <AddToCartButton5Why setStateRecoil={setStateRecoil} state={stateRecoil}/>
       {
         cRes === false ?
           (
@@ -258,12 +276,21 @@ const Cart = memo(({ state, stateImmer, cartItems: cRes, isLoggedIn, dispatch })
           )
       }
       {
-        isLoggedIn === false ?
+        stateImmer === false ?
           (
             <p>SPENTO qu</p>
           ) :
           (
             <p>ACCESO qu</p>
+          )
+      }
+      {
+        stateRecoil === false ?
+          (
+            <p>SPENTO 5</p>
+          ) :
+          (
+            <p>ACCESO 5</p>
           )
       }
     </div>
@@ -292,7 +319,6 @@ const MyApp = () => {
   ))
 }
 
-// eslint-disable-next-line react/display-name
 const HeaderWhy = memo(({ cartItems }) => {
   console.log('%cRENDER_HEADER1', 'color: yellow')
   return (
@@ -301,9 +327,9 @@ const HeaderWhy = memo(({ cartItems }) => {
     </div>
   )
 })
+HeaderWhy.displayName = 'HeaderWhy'
 HeaderWhy.whyDidYouRender = true
 
-// eslint-disable-next-line react/display-name
 const Header2Why = memo(({ state }) => {
   console.log('%cRENDER_HEADER2', 'color: yellow')
   return (
@@ -312,9 +338,9 @@ const Header2Why = memo(({ state }) => {
     </div>
   )
 })
-
+Header2Why.displayName = 'Header2Why'
 Header2Why.whyDidYouRender = true
-// eslint-disable-next-line react/display-name
+
 const Header3Why = memo(({ isLoggedIn }) => {
   console.log('%cRENDER_HEADER3', 'color: pink')
   return (
@@ -323,7 +349,7 @@ const Header3Why = memo(({ isLoggedIn }) => {
     </div>
   )
 })
-
+Header3Why.displayName = 'Header3Why'
 Header3Why.whyDidYouRender = true
 
 const Header4Why = memo(({ state }) => {
@@ -336,6 +362,23 @@ const Header4Why = memo(({ state }) => {
 })
 Header4Why.displayName = 'Header4Why'
 Header4Why.whyDidYouRender = true
+
+const loadingState = atom({
+  key: 'loadingState',
+  default: false,
+})
+
+const Header5Why = memo(() => {
+  console.log('%cRENDER_HEADER5', 'color: yellow')
+  const state = useRecoilValue(loadingState)
+  return (
+    <div style={{ width: '100%', backgroundColor: state ? 'red' : 'yellow' }}>
+      HEADER cinque
+    </div>
+  )
+})
+Header5Why.displayName = 'Header5Why'
+Header5Why.whyDidYouRender = true
 
 const IS_LOGGED_IN = gql`
   query IsUserLoggedIn {
@@ -368,6 +411,7 @@ function immerReducer (draft, action) {
   }
 }
 
+
 // eslint-disable-next-line no-unused-vars
 const Main = () => {
   const { data } = useQuery(GET_CART_ITEMS)
@@ -376,6 +420,7 @@ const Main = () => {
   console.log('render:', render)
   const [state, dispatch] = useReducer(reducer, false)
   const [stateImmer, dispatchImmer] = useImmerReducer(immerReducer, false)
+  const [stateRecoil, setStateRecoil] = useRecoilState(loadingState)
   return (
     <MyContext.Provider value={dispatch}>
       <button onClick={() => setRender(new Date())}>Render</button>
@@ -383,6 +428,7 @@ const Main = () => {
       <Header2Why state={state}/>
       <Header3Why isLoggedIn={data2.isLoggedIn}/>
       <Header4Why state={stateImmer}/>
+      <Header5Why/>
       <br/>
       <div>
         {
@@ -391,8 +437,10 @@ const Main = () => {
             cartItems={data.cartItems}
             dispatch={dispatchImmer}
             isLoggedIn={data2.isLoggedIn}
+            setStateRecoil={setStateRecoil}
             state={state}
             stateImmer={stateImmer}
+            stateRecoil={stateRecoil}
           />
         }
       </div>
@@ -403,7 +451,9 @@ const Main = () => {
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Main/>
+      <RecoilRoot>
+        <Main/>
+      </RecoilRoot>
     </ApolloProvider>
   )
 }
